@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap CSS -->
+    <!--<link rel="stylesheet" href="../static/bootstrap/cerulean.bootstrap.min.css">-->
+    <link rel="stylesheet" href="../static/bootstrap/slate.bootstrap.min.css">
+
+    <!-- TODO: Move to .css -->
+    <style>
+        body{
+            padding-top:70px;
+        }
+        .btn-sm-custom{
+            height: 22px;
+        }
+        .no-wrap-text{
+            white-space: nowrap;
+        }
+        .card{
+            margin-top:5px;
+            margin-left:5px;
+        }
+    </style>
+
+    <title>32OS0000 - Dashboard</title>
+</head>
+<body>
+
+    <!-- NAVIGATION BAR -->
+    {% if layout_id == 0 %}
+        {# Layout0  - disable navbar and reduce padding-top to zero #}
+        <script type="text/javascript"> document.body.style.paddingTop = 0; </script>
+    {% else %}
+        {# Layout... - show navbar #}
+        {% include "nav_block.html" %}
+    {% endif %}
+
+    <!-- DASHBOARD -->
+    <!-- SENSORS DATA CHART -->
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div id='myDataChart' style="width:1200px;height:210px;"></div>
+        </div>
+    </div>
+
+    <!-- CARDS WITH DISK DRIVE PIE CHARTS  -->
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <!-- ASU-1 -->
+            <div style="width:620px;">
+                <div class="card shadow-sm">
+                    <div class="card-header"><h4>Storage Server (ASU-1)</h4></div>
+                    <div class="card-body">
+                        <div class="row justify-content-center">
+                            <!-- pie chart here -->
+                            <div id="asu1_chart_panel_1" style="height:150px;width:150px;"></div>
+                            <div id="asu1_chart_panel_2" style="height:150px;width:150px;"></div>
+                            <div id="asu1_chart_panel_3" style="height:150px;width:150px;"></div>
+                            <div id="asu1_chart_panel_4" style="height:150px;width:150px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GAS -->
+            <div style="width:320px;">
+                <div class="card shadow-sm">
+                    <div class="card-header"><h4>GAS Server</h4></div>
+                    <div class="card-body justify-content-center">
+                        <div class="row">
+                            <!-- pie chart here -->
+                            <div id="gas_chart_panel_1" style="height:150px;width:150px;"></div>
+                            <div id="gas_chart_panel_2" style="height:150px;width:150px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- BUH -->
+            <div style="width:200px;">
+                <div class="card shadow-sm">
+                    <div class="card-header"><h4>BUH Server</h4></div>
+                    <div class="card-body justify-content-center">
+                        <!-- pie chart here -->
+                        <div id="buh_chart_panel_1" style="height:150px;width:150px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+
+            <!-- BACKUPS TABLE (bar charts here) -->
+            <div style="width:540px;">
+                <div class="card shadow-sm">
+                    <div class="card-header"><h4>Backups</h4></div>
+                    <div class="card-body justify-content-center">
+                        <div id="backups_chart_panel" style="height:150px;">
+                            <table class="table table-sm table-hover" id="backups_chart_table">
+                            <!-- BACKUP DATA AND BARCHARTS ADDS HERE via JS -->
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GLAS -->
+            <div style="width:200px;">
+                <div class="card shadow-sm">
+                    <div class="card-header"><h4>GLAS Server</h4></div>
+                    <div class="card-body justify-content-center">
+                        <!-- pie chart here -->
+                        <div id="glas_chart_panel_1" style="height:150px;width:150px;"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- DELL420 -->
+            <div style="width:200px;">
+                <div class="card shadow-sm">
+                    <div class="card-header"><h4>DELL420</h4></div>
+                    <div class="card-body justify-content-center">
+                        <!-- pie chart here -->
+                        <div id="dell420_chart_panel_1" style="height:150px;width:150px;"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- VOSTOK1 -->
+            <div style="width:200px;">
+                <div class="card shadow-sm">
+                    <div class="card-header"><h4>VOSTOK1</h4></div>
+                    <div class="card-body justify-content-center">
+                        <!-- pie chart here -->
+                        <div id="vostok1_chart_panel_1" style="height:150px;width:150px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="../static/bootstrap/jquery-1.12.4.min.js"></script>
+    <script src="../static/bootstrap/popper.min.js"></script>
+    <script src="../static/bootstrap/bootstrap.min.js"></script>
+    <script src="../static/js/feather.min.js"></script>
+    
+    <!-- including ECharts file -->
+    <script src="../static/js/echarts.min.js"></script>
+    <!-- helper functions -->
+    <script src="../static/js/dashboard.js"></script>
+
+    <!-- TODO: Move to dashboard.js -->
+    <script type="text/javascript">
+
+        $(document).ready(function(){  
+            
+            // Draw temperature color chart
+            drawSensorGraph("myDataChart");
+            // Fill table and draw bar chart for backups
+            drawBackupsData("backups_chart_table");
+
+            setInterval('drawSensorGraph("myDataChart")', 300000); // 5 min in millisec
+        });
+
+        // Get and draw data for Storage server (ASU-1)
+        $.get("./nagios_data", {host_id:"0"}).done(function(response){
+            var data = JSON.parse(response);
+            // Drive C
+            var drive_name_0 = data["storage"][0]["name"]
+            var used_space_0 = data["storage"][0]["used"]
+            var free_space_0 = data["storage"][0]["free"]
+            drawDrivePie(used_space_0, free_space_0, "Drive C:", "asu1_chart_panel_1");
+            // Drive D
+            var drive_name_1 = data["storage"][1]["name"]
+            var used_space_1 = data["storage"][1]["used"]
+            var free_space_1 = data["storage"][1]["free"]
+            drawDrivePie(used_space_1, free_space_1, "Drive D:", "asu1_chart_panel_2");
+            // Drive E
+            var drive_name_2 = data["storage"][2]["name"]
+            var used_space_2 = data["storage"][2]["used"]
+            var free_space_2 = data["storage"][2]["free"]
+            drawDrivePie(used_space_2, free_space_2, "Drive E:", "asu1_chart_panel_3");
+
+            // Reserved Drive
+            drawDrivePie(2000, 0, "Reserved", "asu1_chart_panel_4");
+        });
+
+        // Get and draw data for GAS server (Server1)
+        $.get("./nagios_data", {host_id:"1"}).done(function(response){
+            var data = JSON.parse(response);
+            var drive_name_0 = data["storage"][0]["name"]
+            var used_space_0 = data["storage"][0]["used"]
+            var free_space_0 = data["storage"][0]["free"]
+            drawDrivePie(used_space_0, free_space_0, "Drive C:", "gas_chart_panel_1");
+
+            var drive_name_1 = data["storage"][1]["name"]
+            var used_space_1 = data["storage"][1]["used"]
+            var free_space_1 = data["storage"][1]["free"]
+            drawDrivePie(used_space_1, free_space_1, "Drive D:", "gas_chart_panel_2");
+        });
+
+        // Get and draw data for BUH server
+        $.get("./nagios_data", {host_id:"2"}).done(function(response){
+            var data = JSON.parse(response);
+            var drive_name_0 = data["storage"][0]["name"]
+            var used_space_0 = data["storage"][0]["used"]
+            var free_space_0 = data["storage"][0]["free"]
+            drawDrivePie(used_space_0, free_space_0, "Drive C:", "buh_chart_panel_1");
+        });
+
+        // Get and draw data for GLAS server
+        $.get("./nagios_data", {host_id:"3"}).done(function(response){
+            var data = JSON.parse(response);
+            var drive_name_0 = data["storage"][0]["name"]
+            var used_space_0 = data["storage"][0]["used"]
+            var free_space_0 = data["storage"][0]["free"]
+            drawDrivePie(used_space_0, free_space_0, "Drive C:", "glas_chart_panel_1");
+        });
+
+        // Get and draw data for DELL420 server
+        $.get("./nagios_data", {host_id:"4"}).done(function(response){
+            var data = JSON.parse(response);
+            var drive_name_0 = data["storage"][0]["name"]
+            var used_space_0 = data["storage"][0]["used"]
+            var free_space_0 = data["storage"][0]["free"]
+            drawDrivePie(used_space_0, free_space_0, "Drive C:", "dell420_chart_panel_1");
+        });
+
+        // Get and draw data for VOSTOK1 server
+        $.get("./nagios_data", {host_id:"5"}).done(function(response){
+            var data = JSON.parse(response);
+            var drive_name_0 = data["storage"][0]["name"]
+            var used_space_0 = data["storage"][0]["used"]
+            var free_space_0 = data["storage"][0]["free"]
+            drawDrivePie(used_space_0, free_space_0, "Drive C:", "vostok1_chart_panel_1");
+        });
+    </script>
+
+  </body>
+</html>

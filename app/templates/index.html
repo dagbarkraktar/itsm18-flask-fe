@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap CSS -->
+    <!--<link rel="stylesheet" href="../static/bootstrap/cerulean.bootstrap.min.css">-->
+    <link rel="stylesheet" href="../static/bootstrap/slate.bootstrap.min.css">
+    <!-- DateRangePicker CSS -->
+    <link rel="stylesheet" type="text/css" href="../static/daterangepicker/daterangepicker.css" />
+
+    <!-- TODO: Move to custom.css -->
+    <!-- <link rel="stylesheet" href="../static/bootstrap/custom.css"> -->
+    <style>
+        body{
+            padding-top:70px
+        }
+        .btn-sm-custom{
+            height: 22px;
+        }
+        .no-wrap-text{
+            white-space: nowrap;
+        }
+    </style>
+
+    <title>ITSM18 - HWDB</title>
+</head>
+<body>
+
+    <!-- NAVIGATION BAR -->
+    {% include "nav_block.html" %}
+
+    <!-- CASE LIST -->
+    <div class="container-fluid">
+        <div class="row">
+            <div id='case-list' class="col-md-12">
+
+                <!-- Show alert when error occurs -->
+                {% if hw_list == [] %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <strong>Empty data!</strong> A database error may have occurred.
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                {% endif %}
+
+                <!-- Show filter list here (if any) -->
+                <div id="filters_row">
+                    {% if hw_filters != {} %}
+                        {% for field in hw_filters %}
+                        <a href="{{ url_for('hwdb_list.hw_filter', field=field, value=hw_filters[field], action='del') }}">
+                            <button type="button" class="btn btn-sm btn-secondary">{{ field }}
+                                <span class="badge badge-light">{{ hw_filters[field] }}</span> &times;
+                            </button>
+                        </a>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <!-- Table with hardware list -->
+                <table class="table table-bordered table-hover table-sm table-striped">
+                    <!-- <thead class="thead-light text-center small"> -->
+                    <thead class="text-center small">
+                        <tr>
+                            <th scope="col" class="align-middle">#</th>
+                            <th scope="col" class="align-middle">Инв.№
+                                <img src="../static/img/sort_asc_16.png" title="Всегда по возрастанию">
+                            </th>
+                            <th scope="col" class="align-middle"></th>
+                            <th scope="col" class="align-middle">S</th>
+                            <th scope="col" class="align-middle">M</th>
+                            <th scope="col" class="align-middle">U</th>
+                            <th scope="col" class="align-middle"></th>
+                            <th scope="col" class="align-middle no-wrap-text">Каб.
+                                <a href="{{ url_for('hwdb_list.hw_sort', field='location') }}">
+                                    <img src="../static/img/sort_{{ sort_conditions['location'] }}_16.png">
+                                </a>
+                            </th>
+                            <th scope="col" class="align-middle">Тип</th>
+                            <th scope="col" class="align-middle">Произв.
+                                <a href="{{ url_for('hwdb_list.hw_sort', field='manuf') }}">
+                                    <img src="../static/img/sort_{{ sort_conditions['manuf'] }}_16.png">
+                                </a>
+                            </th>
+                            <th scope="col" class="align-middle">Модель
+                                <a href="{{ url_for('hwdb_list.hw_sort', field='model') }}">
+                                    <img src="../static/img/sort_{{ sort_conditions['model'] }}_16.png">
+                                </a>
+                            </th>
+                            <th scope="col" class="align-middle">SN</th>
+                            <th scope="col" class="align-middle no-wrap-text">Год
+                                <a href="{{ url_for('hwdb_list.hw_sort', field='year') }}">
+                                    <img src="../static/img/sort_{{ sort_conditions['year'] }}_16.png">
+                                </a>
+                            </th>
+                            <th scope="col" class="align-middle">Учет</th>
+                            <th scope="col" class="align-middle"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for hw_unit in hw_list %}
+                        <tr class="text-center small">
+                            <td>{{ hw_unit.id }}</td>
+
+                            <!-- списанные единицы красным -->
+                            {% if hw_unit.status_id == 7 %}
+                                <td class="table-danger">{{ hw_unit.invnum }}</td>
+                            {% else %}
+                                <td>
+                                    <a href="{{ url_for('hwdb_list.hw_filter', field='invnum', value=hw_unit.invnum, action='add') }}"
+                                        title="Применить фильтр">
+                                        {{ hw_unit.invnum }}
+                                    </a>
+                                </td>
+                            {% endif %}
+
+                            <!-- Unit dropdown menu -->
+                            <td>
+                                <div class="dropdown">
+                                    <button class="btn btn-default btn-sm btn-sm-custom dropdown-toggle" type="button"
+                                            id="dropdownMenu{{ hw_unit.id }}" data-toggle="dropdown"
+                                            aria-haspopup="true" aria-expanded="false">
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="dropdownMenu{{ hw_unit.id }}">
+                                        <h6 class="dropdown-header">{{ hw_unit.invnum }}</h6>
+                                        <a class="dropdown-item small" href="{{ url_for('hwdb_list.hw_unit_edit_form', hw_id=hw_unit.id) }}">
+                                            Редактировать юнит
+                                        </a>
+                                        {# Maintenance menu #}
+                                        {% if hw_unit.last_maintenance_id == 0 %}
+                                            <a class="dropdown-item small" href="{{ url_for('hwdb_maintenance.maintenance', hw_id=hw_unit.id) }}">
+                                                Добавить юнит в текущее ТО
+                                            </a>
+                                        {% else %}
+                                            <a class="dropdown-item small" href="{{ url_for('hwdb_maintenance.maintenance_del_last', hw_id=hw_unit.id, m_id=hw_unit.last_maintenance_id) }}">
+                                                Убрать юнит из ТО
+                                            </a>
+                                        {% endif %}
+
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item small" href="#">Добавить отчет с конфигурацией (xml)</a>
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item small" href="#" data-toggle="modal" data-target="#ticket_info_modal" onclick="showTicketInfo({{ hw_unit.id }})">
+                                            Информация для заявки на ГЛ
+                                        </a>
+                                    </div>
+                                </div>
+                            </td>
+
+                            {# Hardware status icon: green-gray-yellow-red #}
+                            <td>
+                                {% if hw_unit.status_id == 1 %}
+                                    <img src="../static/img/status_green.png" title="используется">
+                                {% elif hw_unit.status_id == 2 or hw_unit.status_id == 3 %}
+                                    <img src="../static/img/status_gray.png" title="не используется/резерв">
+                                {% elif hw_unit.status_id == 4 or hw_unit.status_id == 5 %}
+                                    <img src="../static/img/status_yellow.png" title="вышел из строя/ремонт">
+                                {% elif hw_unit.status_id == 6 %}
+                                    <img src="../static/img/status_red.png" title="на списание">
+                                {%else %}
+                                    {{ hw_unit.status_id }}
+                                {% endif %}
+                            </td>
+
+                            {# Maintenance status icon: wrenches #}
+                            <td>
+                                {% if hw_unit.last_maintenance_id > 0 %}
+                                    <img src="../static/img/wrench.png" title="{{ hw_unit.last_maintenance }}">
+                                    <sub>{{ hw_unit.last_maintenance_id }}</sub>
+                                {% endif %}
+                            </td>
+
+                            <td>{{ hw_unit.empl_fio }} ({{ hw_unit.empl_id }})</td>
+                            <td>{{ hw_unit.legacy_user }}</td>
+                            <td>
+                                <a href="{{ url_for('hwdb_list.hw_filter', field='location', value=hw_unit.location, action='add') }}"
+                                    title="Применить фильтр">
+                                    {{ hw_unit.location }}
+                                </a>
+                            </td>
+
+                            <td>
+                                <a href="{{ url_for('hwdb_list.hw_filter', field='type_id', value=hw_unit.type_id, action='add') }}"
+                                    title="Применить фильтр">
+                                    {{ hw_unit.hw_type }}
+                                </a>
+                            </td>
+
+                            <td class="text-left">
+                                <a href="{{ url_for('hwdb_list.hw_filter', field='manuf', value=hw_unit.manuf, action='add') }}"
+                                title="Применить фильтр">
+                                {{ hw_unit.manuf }}
+                                </a>
+                            </td>
+                            <td class="text-left">
+                                <a href="{{ url_for('hwdb_list.hw_filter', field='model', value=hw_unit.model, action='add') }}"
+                                title="Применить фильтр">
+                                {{ hw_unit.model }}
+                                </a>
+                            </td>
+                            <td>{{ hw_unit.serialnum }}</td>
+                            <td>{{ hw_unit.year }}</td>
+                            <td>{{ hw_unit.accounting }}</td>
+                            <!--
+                            <td class="text-left">{{ hw_unit.comments }}</td>
+                            -->
+                            <td class="text-left"></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Modal ticket_info -->
+    <div class="modal fade" id="ticket_info_modal" tabindex="-1" role="dialog" aria-labelledby="ticket_info_modal_label" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="ticket_info_modal_label">Информация для заявки на ГЛ</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body" id="ticket_info_modal_body">
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
+                    </div>
+                </div>
+        </div>
+    </div>
+
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="../static/bootstrap/jquery-1.12.4.min.js"></script>
+    <script src="../static/bootstrap/popper.min.js"></script>
+    <script src="../static/bootstrap/bootstrap.min.js"></script>
+    <!-- 
+      DateRange picker
+      A JavaScript component for choosing date ranges, dates and times.
+      https://github.com/dangrossman/daterangepicker
+    -->
+    <script type="text/javascript" src="../static/daterangepicker/moment.min.js"></script>
+    <script type="text/javascript" src="../static/daterangepicker/daterangepicker.min.js"></script>
+
+    <!-- js helper functions -->
+<!--    <script type="text/javascript" src="../static/main.js"></script>-->
+    
+    <!-- TODO: move to main.js file -->
+    <script type="text/javascript">
+        // on page loading
+        $(document).ready(function(){
+        }); // end (document).ready()
+
+        // Load info to ticket_info_modal
+        function showTicketInfo(unit_id) {
+            // clear div
+            $("#ticket_info_modal_body").empty();
+
+            // get and show hw unit data
+            $.get("./hwunits/"+unit_id).done(function(response){
+                var data = JSON.parse(response);
+                var title = "Выход из строя " + data["hw_type"] + " " + data["manuf"] +  " " + data["model"] + " (инв." + data["invnum"] + ")<br><br>";
+                //var title = "Не работает " + data["hw_type"].toUpperCase() + " " + data["manuf"] +  " " + data["model"] + " (инв." + data["invnum"] + ")  (проверка т/с)<br><br>";
+                $("#ticket_info_modal_body").append(title);
+                $("#ticket_info_modal_body").append("Модель: " + data["manuf"] +  " " + data["model"] + "<br>");
+                $("#ticket_info_modal_body").append("Инв.номер: " + data["invnum"] + "<br>");
+                $("#ticket_info_modal_body").append("Заводской номер: " + data["serialnum"] + "<br>");
+                $("#ticket_info_modal_body").append("Год выпуска: " + data["year"] + "<br>");
+            });
+        }
+
+
+    </script>
+
+  </body>
+</html>

@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap CSS -->
+    <!--<link rel="stylesheet" href="../static/bootstrap/cerulean.bootstrap.min.css">-->
+    <link rel="stylesheet" href="../static/bootstrap/slate.bootstrap.min.css">
+
+    <!-- TODO: Move to custom.css -->
+    <!-- <link rel="stylesheet" href="../static/bootstrap/custom.css"> -->
+    <style>
+        body{
+            padding-top:70px
+        }
+        .btn-sm-custom{
+            height: 22px;
+        }
+        .no-wrap-text{
+            white-space: nowrap;
+        }
+    </style>
+
+    <title>ITSM18 - Maintenance</title>
+</head>
+<body>
+
+    <!-- NAVIGATION BAR -->
+    {% include "nav_block.html" %}
+
+    <!-- MAINTENANCE DOCUMENTS LIST -->
+    <div class="container-fluid">
+        <div class="row">
+            <div id='case-list' class="col-md-12">
+
+                <!-- Show alert when error occurs -->
+                {% if mt_list == [] %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <strong>Empty data!</strong> A database error may have occurred.
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                {% endif %}
+
+                <!-- Table with doc list -->
+                <table class="table table-bordered table-hover table-sm table-striped">
+                    <thead class="text-center small">
+                        <tr>
+                            <th scope="col" class="align-middle">#</th>
+                            <th scope="col" class="align-middle">№ акта</th>
+                            <th scope="col" class="align-middle">Дата акта</th>
+                            <th scope="col" class="align-middle">Кол-во единиц (всего: {{ rec_qty }})</th>
+                            <th scope="col" class="align-middle">Примечание</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for mt_doc in mt_list %}
+                            <tr class="text-center small">
+                                <td>{{ mt_doc.id }}</td>
+                                <td>
+                                    <a href="{{ url_for('hwdb_maintenance.maintenance_report', m_id=mt_doc.id) }}">
+                                        {{ mt_doc.doc_num }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('hwdb_maintenance.maintenance_report', m_id=mt_doc.id) }}">
+                                        {{ mt_doc.doc_date }}
+                                    </a>
+                                </td>
+                                <!-- planned units (selected units) -->
+                                <td><a href="{{ url_for('hwdb_maintenance.maintenance_report', m_id=mt_doc.id) }}">
+                                        {{ mt_doc.units_qty }} ({{ qty_dict[mt_doc.id] }})
+                                    </a>
+                                </td>
+                                <td></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="../static/bootstrap/jquery-1.12.4.min.js"></script>
+    <script src="../static/bootstrap/popper.min.js"></script>
+    <script src="../static/bootstrap/bootstrap.min.js"></script>
+
+  </body>
+</html>

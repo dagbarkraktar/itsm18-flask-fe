@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Отчет по техническому обслуживанию {{ doc.doc_num }}</title>
+    <style type="text/css">
+        table.printform { 
+            font: 10pt sans-serif; 
+            margin: 1em 1em 1em 0;
+            border-collapse: collapse;
+        }
+
+        .printform td, th { 
+            border: 1px #000 solid;
+            padding: 0.2em; 
+        }
+
+        .printform th { 
+            background: #fff;
+            font-weight: bold;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <center><h2>Техническое обслуживание по акту № {{ doc.doc_num }} от {{ doc.doc_date }}</h2></center>
+    <center>
+        <table class='printform'>
+            <tr>
+                <th>#</th>
+                <th>#</th>
+                <th>#</th>
+            </tr>
+            {% for record in report_list %}
+            <tr>
+                {# Фильтр upper для "МФУ", "ИБП", остальное capitalize #}
+                {% if record.type_id == 7 or record.type_id == 8 %}
+                    {% set hwtype = record.hw_type|upper %}
+                {% else %}
+                    {% set hwtype = record.hw_type|capitalize %}
+                {% endif %}
+                
+                {# Для комплектов ПК подставляем "Комплект АРМ" #}
+                {% if record.type_id == 3 or record.type_id == 27 or record.type_id == 28 %}
+                    <td>Комплект АРМ</td><td>{{ record.hw_type }} {{ record.manuf }} {{ record.model }}</td>
+                {% else %}
+                    <td>{{ hwtype }}</td><td>{{ record.manuf }} {{ record.model }}</td>
+                {% endif %}
+
+                <td align='center'>{{ record.invnum }}</td>
+            </tr>                
+            {% endfor %}
+        </table>
+    </center>
+</body>
+</html>

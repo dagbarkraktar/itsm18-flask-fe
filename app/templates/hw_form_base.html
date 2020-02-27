@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <!-- Bootstrap CSS -->
+        <!--<link rel="stylesheet" href="../static/bootstrap/cerulean.bootstrap.min.css">-->
+        <link rel="stylesheet" href="../static/bootstrap/slate.bootstrap.min.css">
+        <!-- DateRangePicker CSS -->
+        <link rel="stylesheet" type="text/css" href="../static/daterangepicker/daterangepicker.css" />
+
+        <!-- TODO: Move to custom.css -->
+        <!-- <link rel="stylesheet" href="../static/bootstrap/custom.css"> -->
+        <style>
+            body{
+                padding-top:70px
+            }
+            .btn-sm-custom{
+                height: 22px;
+            }
+            .no-wrap-text{
+                white-space: nowrap;
+            }
+            .form-control {
+                margin-left: 10px;
+                margin-right: 10px;
+            }
+            .form-control-sm {
+                margin-left: 10px;
+                margin-right: 10px;
+            }
+        </style>
+
+        <title>ITSM18 - Edit form</title>
+    </head>
+    <body>
+
+    <!-- NAVIGATION BAR -->
+    {% include "nav_block.html" %}
+
+
+    <!-- HW UNIT EDIT FORM -->
+    <div class="container-fluid">
+        <div class="row">
+            <div id='hw_edit_form' class="col-md-12">
+                <form id='add_record_form' action="{{ url_for('hwdb_list.hw_unit_update') }}" method="post">
+                <fieldset>
+                    <div class="form-group row">
+                        <!-- ID -->
+                        <label for="hw_id" class="col-form-label-sm">ID:</label>
+                        <div><input type="text" class="form-control-sm" id="hw_id" name="hw_id" readonly="readonly" value="{{ hw_unit.id }}"></div>
+                        <!-- INVNUM -->
+                        <label for="hw_invnum" class="col-form-label-sm">Инв.номер:</label>
+                        <div><input type="text" class="form-control-sm" id="hw_invnum" name="hw_invnum" readonly="readonly" value="{{ hw_unit.invnum }}"></div>
+                        <!-- HW_TYPE -->
+                        <label for="hw_type_id" class="col-form-label-sm">Тип:</label>
+                        <div>
+                            <select class="form-control-sm" id="hw_type_id" name="hw_type_id">
+                                {% for hw_type in hw_types_dict %}
+                                    {% if hw_type.id == hw_unit.type_id %}
+                                        <option value="{{ hw_type.id }}" selected="selected">{{ hw_type.hw_type_ru }}</option>
+                                    {% else %}
+                                        <option value="{{ hw_type.id }}">{{ hw_type.hw_type_ru }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <!-- HW_STATUS -->
+                        <label for="hw_status_id" class="col-form-label-sm">Статус:</label>
+                        <div>
+                            <select class="form-control-sm" id="hw_status_id" name="hw_status_id">
+                                {% for hw_status in hw_statuses %}
+                                    {% if hw_status.id == hw_unit.status_id %}
+                                        <option value="{{ hw_status.id }}" selected="selected">{{ hw_status.status_name_ru }}</option>
+                                    {% else %}
+                                        <option value="{{ hw_status.id }}">{{ hw_status.status_name_ru }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <!-- LOCATION -->
+                        <label for="hw_location" class="col-form-label-sm">Каб.:</label>
+                        <div><input type="text" class="form-control-sm" id="hw_location" name="hw_location" value="{{ hw_unit.location }}"></div>
+
+                        <!-- EMPLOYEE SELECT -->
+                        <label for="hw_empl_id" class="col-form-label-sm">Пользователь:</label>
+                        <div>
+                            <select class="form-control-sm" id="hw_empl_id" name="hw_empl_id">
+                                {% for empl in empl_dict %}
+                                    {% if empl.id == hw_unit.empl_id %}
+                                        <option value="{{ empl.id }}" selected="selected">{{ empl.fio }} - {{ empl.post }}</option>
+                                    {% else %}
+                                        <option value="{{ empl.id }}">{{ empl.fio }} - {{ empl.post}}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <!-- LEGACY_USER -->
+                        <label for="hw_legacy_user" class="col-form-label-sm"></label>
+                        <div><input type="text" class="form-control-sm" id="hw_legacy_user" name="hw_legacy_user" disabled value="{{ hw_unit.legacy_user }}"></div>
+                    </div>
+
+                    <div class="form-group row">
+                        <!-- MANUF -->
+                        <label for="hw_manuf" class="col-form-label-sm">Произв.:</label>
+                        <div><input type="text" class="form-control-sm" id="hw_manuf" name="hw_manuf" value="{{ hw_unit.manuf }}"></div>
+                        <!-- MODEL -->
+                        <label for="hw_model" class="col-form-label-sm">Модель:</label>
+                        <div><input type="text" class="form-control-sm" id="hw_model" name="hw_model" value="{{ hw_unit.model }}"></div>
+                        <!-- SN -->
+                        <label for="hw_serialnum" class="col-form-label-sm">SN:</label>
+                        <div><input type="text" class="form-control-sm" id="hw_serialnum" name="hw_serialnum" value="{{ hw_unit.serialnum }}"></div>
+                    </div>
+
+                    <div class="form-group row">
+                        <!-- YEAR -->
+                        <label for="hw_year" class="col-form-label-sm">Год вып.:</label>
+                        <div><input type="text" class="form-control-sm" id="hw_year" name="hw_year" value="{{ hw_unit.year }}"></div>
+                        <!-- WARRANTY -->
+                        <label for="hw_warranty" class="col-form-label-sm">Гарантия:</label>
+                        <div><input type="text" class="form-control-sm" id="hw_warranty" name="hw_warranty" value="{{ hw_unit.warranty }}"></div>
+                        <!-- ACCOUNTING -->
+                        <label for="hw_accounting" class="col-form-label-sm">Учёт:</label>
+                        <div><input type="text" class="form-control-sm" id="hw_accounting" name="hw_accounting" value="{{ hw_unit.accounting }}"></div>
+                    </div>
+
+                    <div class="form-group row">
+                        <!-- COMMENTS -->
+                        <label for="hw_comments" class="col-form-label-sm">Коммент.:</label>
+                        <div><textarea class="form-control" id="hw_comments" name="hw_comments" rows="5" cols="80">{{ hw_unit.comments }}</textarea></div>
+                    </div>
+
+                    {# Блок с кнопками формы #}
+                    {% block control_buttons %}
+                    {% endblock %}
+
+                </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="../static/bootstrap/jquery-1.12.4.min.js"></script>
+    <script src="../static/bootstrap/popper.min.js"></script>
+    <script src="../static/bootstrap/bootstrap.min.js"></script>
+
+    </body>
+</html>
