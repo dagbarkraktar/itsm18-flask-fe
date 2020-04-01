@@ -21,7 +21,7 @@ $ docker build -t flask-itsm18-fe .
 Необходимо также передать переменные: `MYSQL_ITSM18_USER`, `MYSQL_ITSM18_PASS`, `MYSQL_ITSM18_HOST` Это можно сделать через файл `env.list`, содержащий строки вида `VAR=VAL`. Например:
 
 ```
-# EXP-FLASK credentials
+# MYSQL credentials
 MYSQL_ITSM18_USER=xxxxxxxx
 MYSQL_ITSM18_PASS=xxxxxxxx
 MYSQL_ITSM18_HOST=xxx.xxx.xxx.xxx
