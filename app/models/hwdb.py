@@ -199,6 +199,7 @@ class MaintenanceDocsDbModel(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     year = db.Column(db.Integer)
+    num_thru_year = db.Column(db.Integer)  # maintenance number over the year (1,2,3,4)
     doc_date = db.Column(db.DateTime)
     doc_num = db.Column(db.String(16))
     units_qty = db.Column(db.Integer)

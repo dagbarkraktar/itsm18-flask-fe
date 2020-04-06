@@ -48,7 +48,8 @@
                 <table class="table table-bordered table-hover table-sm table-striped">
                     <thead class="text-center small">
                         <tr>
-                            <th scope="col" class="align-middle">#</th>
+                            <th scope="col" class="align-middle">id</th>
+                            <th scope="col" class="align-middle">Квартал/Год</th>
                             <th scope="col" class="align-middle">№ акта</th>
                             <th scope="col" class="align-middle">Дата акта</th>
                             <th scope="col" class="align-middle">Кол-во единиц (всего: {{ rec_qty }})</th>
@@ -59,6 +60,11 @@
                         {% for mt_doc in mt_list %}
                             <tr class="text-center small">
                                 <td>{{ mt_doc.id }}</td>
+                                <td>
+                                    <a href="{{ url_for('hwdb_maintenance.maintenance_report', m_id=mt_doc.id) }}">
+                                        {{ mt_doc.num_thru_year }}/{{ mt_doc.year }}
+                                    </a>
+                                </td>
                                 <td>
                                     <a href="{{ url_for('hwdb_maintenance.maintenance_report', m_id=mt_doc.id) }}">
                                         {{ mt_doc.doc_num }}

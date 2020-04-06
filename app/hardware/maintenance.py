@@ -1,8 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, request, session
 
-# from app.models import hwdb
 from models import hwdb
-# from app.main import db
 from main import db
 
 # TODO: move to settings/env
@@ -22,7 +20,7 @@ def maintenance_docs():
     selected_year = request.args.get('year', 0, type=int)
     maintenance_records_qty = 0
 
-    # if recieved year is incorrect
+    # if received year is incorrect
     if (selected_year == 0) or (selected_year < 2017) or (selected_year > CURRENT_YEAR):
         # set year (from session or default)
         if "selected_year" in session:
@@ -40,10 +38,13 @@ def maintenance_docs():
             .filter(hwdb.MaintenanceDocsDbModel.year == selected_year)\
             .order_by(hwdb.MaintenanceDocsDbModel.id).all()
 
+        # TODO: Fix this o_O
         # Get quantity of hw units in each maintenance docs (by counting last_maintenance_id in hwdb table)
         for mntc in mt_list:
-            units_qty_dict[mntc.id] = db.session.query(hwdb.HwDbModel).filter(hwdb.HwDbModel.last_maintenance_id == mntc.id).count()
+            units_qty_dict[mntc.id] = db.session.query(hwdb.HwDbModel)\
+                                        .filter(hwdb.HwDbModel.last_maintenance_id == mntc.id).count()
 
+        # TODO: Fix wrong counting (add smth like current_year field)
         # get record quantity
         maintenance_records_qty = db.session.query(hwdb.MaintenanceDbModel).count()
 
@@ -61,21 +62,22 @@ def maintenance():
     Add unit maintenance info to DB
     :return: redirect back to hardware list
     """
-    # get current maintenance_doc info
-    maintenance_doc = db.session.query(hwdb.MaintenanceDocsDbModel) \
-        .order_by(hwdb.MaintenanceDocsDbModel.id.desc()).first()
 
-    # get record_id (form GET request)
+    # get unit id (form GET request)
     hw_unit_id = request.args.get('hw_id', 0, type=int)
 
     try:
+        # get current maintenance_doc (last added)
+        maintenance_doc = db.session.query(hwdb.MaintenanceDocsDbModel) \
+            .order_by(hwdb.MaintenanceDocsDbModel.id.desc()).first()
+
         # save maintenance_id value to HWDB table
         hw_unit = db.session.query(hwdb.HwDbModel).get(hw_unit_id)
         hw_unit.last_maintenance_id = maintenance_doc.id
         db.session.add(hw_unit)
         db.session.commit()
 
-        # add record to MAINTENANCE table
+        # add record to MAINTENANCE_DB table
         maintenance_record = hwdb.MaintenanceDbModel(doc_id=maintenance_doc.id, hw_unit_id=hw_unit_id, status_id=1)
         db.session.add(maintenance_record)
         db.session.commit()
@@ -99,17 +101,17 @@ def maintenance_del_last():
     m_id = request.args.get('m_id', 0, type=int)
 
     try:
-        # set last_maintenance_id to zero
+        # set last_maintenance_id to zero (HW_DB table)
         hw_unit = db.session.query(hwdb.HwDbModel).get(hw_unit_id)
         hw_unit.last_maintenance_id = 0
         db.session.add(hw_unit)
         db.session.commit()
 
-        # find maintenance record
+        # find maintenance record (MAINTENANCE_DB table)
         maintenance_record = db.session.query(hwdb.MaintenanceDbModel)\
             .filter(hwdb.MaintenanceDbModel.doc_id == m_id, hwdb.MaintenanceDbModel.hw_unit_id == hw_unit_id).first()
 
-        # delete record
+        # delete this record
         if maintenance_record is not None:
             db.session.delete(maintenance_record)
             db.session.commit()
@@ -127,6 +129,8 @@ def maintenance_report():
     """
     Render maintenance report table
     """
+    maintenance_doc = []
+
     # get parameters form GET request
     maintenance_id = request.args.get('m_id', 0, type=int)
 
